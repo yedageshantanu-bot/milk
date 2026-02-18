@@ -9,7 +9,7 @@
     "start": "NODE_ENV=production node dist/index.cjs",
     "check": "tsc",
     "db:push": "drizzle-kit push",
-    "mobile:init": "npx @capacitor/cli@latest init --web-dir=dist/public 'Milk Delivery' com.yourcompany.milk || true",
+    "mobile:init": "npx cap init --web-dir=dist/public 'Milk Delivery' com.yourcompany.milk || true",
     "mobile:sync": "npx cap sync android",
     "mobile:build": "npm run build && npm run mobile:sync",
     "ci:android": "npm ci && npm run build && npx cap sync android && cd android && ./gradlew assembleRelease"
