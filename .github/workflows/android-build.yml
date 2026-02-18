@@ -17,7 +17,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: '20'
 
       - name: Setup Java (for Gradle)
         uses: actions/setup-java@v4
@@ -33,7 +33,7 @@ jobs:
           components: 'platform-tools,build-tools;33.0.0,platforms;android-33'
 
       - name: Install dependencies
-        run: npm ci
+        run: npm install
 
       - name: Build web (Vite)
         run: npm run build
