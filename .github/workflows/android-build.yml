@@ -1,0 +1,81 @@
+name: Build Android APK
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+
+jobs:
+  build-android:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: Milk-Delivery-Pro
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Setup Java (for Gradle)
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Install Android SDK
+        uses: android-actions/setup-android@v2
+        with:
+          api-level: 33
+          build-tools: '33.0.0'
+          components: 'platform-tools,build-tools;33.0.0,platforms;android-33'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build web (Vite)
+        run: npm run build
+
+      - name: Initialize Capacitor (safe)
+        run: npm run mobile:init || true
+
+      - name: Sync Capacitor Android
+        run: npx cap sync android
+
+      - name: Build Android Release
+        run: cd android && ./gradlew assembleRelease
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-apk
+          path: android/app/build/outputs/apk/release/*.apk
+
+      - name: Create GitHub Release
+        id: create_release
+        uses: actions/create-release@v1
+        with:
+          tag_name: android-build-${{ github.run_id }}
+          release_name: Android APK ${{ github.run_id }}
+          body: APK built by CI
+
+      - name: Upload APK to Release
+        uses: actions/upload-release-asset@v1
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: android/app/build/outputs/apk/release/app-release.apk
+          asset_name: app-release.apk
+          asset_content_type: application/vnd.android.package-archive
+
+      - name: Generate QR for release download
+        run: |
+          URL="https://github.com/${{ github.repository }}/releases/download/android-build-${{ github.run_id }}/app-release.apk"
+          node tools/generate-qr.js "$URL" ./app-qrcode.png
+
+      - name: Upload QR artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: apk-qr
+          path: app-qrcode.png

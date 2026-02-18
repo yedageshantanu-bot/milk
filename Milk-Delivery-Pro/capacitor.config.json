@@ -1,0 +1,6 @@
+{
+  "appId": "com.yourcompany.milk",
+  "appName": "Milk Delivery",
+  "webDir": "dist/public",
+  "bundledWebRuntime": false
+}
